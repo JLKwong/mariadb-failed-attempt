@@ -47,7 +47,6 @@ jobs:
           docker manifest annotate $repo:$tag "$base@"$balena_rpi_sha --arch arm
           docker manifest inspect $repo:$tag
           docker manifest inspect $repo:$tag2
-          flag=true
           if [[ $flag == true ]]; then
             docker manifest push $repo:$tag; docker manifest push $repo:$tag2
           else
