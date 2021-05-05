@@ -18,37 +18,37 @@ jobs:
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
           repo="jleekwong/mariadb"
-          base="raspberry-pi-debian"
+          base="balenalib/raspberry-pi-debian"
           source sha_function.sh
           debian_x86_sha=$(get_variant_sha "debian" "latest" "amd64")
           echo "debian amd64"
           echo $debian_x86_sha
-          variant_debian_x86_sha=$(get_manifest_sha "balenalib/$repo:latest" "amd64")
+          variant_debian_x86_sha=$(get_manifest_sha "$repo:latest" "amd64")
           echo "treehouses/debian amd64"
           echo $variant_debian_x86_sha
           balena_rpi_sha=$(get_tag_sha "$base" "latest")
           echo $balena_rpi_sha
-          variant_rpi_sha=$(get_manifest_sha "balenalib/$repo:latest" "arm")
+          variant_rpi_sha=$(get_manifest_sha "$repo:latest" "arm")
           echo $variant_rpi_sha
           debian_arm64_sha=$(get_variant_sha "debian" "latest" "arm64")
           echo $debian_arm64_sha
-          variant_debian_arm64_sha=$(get_manifest_sha "balenalib/$repo:latest" "arm64")
+          variant_debian_arm64_sha=$(get_manifest_sha "$repo:latest" "arm64")
           echo $variant_debian_arm64_sha
           flag=$(compare_sha  "$debian_x86_sha" "$variant_debian_x86_sha" "$balena_rpi_sha" "$variant_rpi_sha" "$debian_arm64_sha" "$variant_debian_arm64_sha")
           echo $flag
           tag="3.12-$(date +%Y%m%d%H%M)"
           tag2="latest"
           echo $tag
-          docker manifest create balenalib/$repo:$tag "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
-          docker manifest create balenalib/$repo:latest "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
-          docker manifest annotate balenalib/$repo:latest "$base@"$balena_rpi_sha --arch arm
-          docker manifest annotate balenalib/$repo:$tag "debian@"$debian_arm64_sha --arch arm64
-          docker manifest annotate balenalib/$repo:latest "debian@"$debian_arm64_sha --arch arm64
-          docker manifest annotate balenalib/$repo:$tag "$base@"$balena_rpi_sha --arch arm
-          docker manifest inspect balenalib/$repo:$tag
-          docker manifest inspect balenalib/$repo:$tag2
+          docker manifest create $repo:$tag "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
+          docker manifest create $repo:latest "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
+          docker manifest annotate $repo:latest "$base@"$balena_rpi_sha --arch arm
+          docker manifest annotate $repo:$tag "debian@"$debian_arm64_sha --arch arm64
+          docker manifest annotate $repo:latest "debian@"$debian_arm64_sha --arch arm64
+          docker manifest annotate $repo:$tag "$base@"$balena_rpi_sha --arch arm
+          docker manifest inspect $repo:$tag
+          docker manifest inspect $repo:$tag2
           if [[ $flag == true ]]; then
-            docker manifest push balenalib/$repo:$tag; docker manifest push balenalib/$repo:$tag2
+            docker manifest push $repo:$tag; docker manifest push $repo:$tag2
           else
             echo "no changes"
           fi
