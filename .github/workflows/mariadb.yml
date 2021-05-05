@@ -1,12 +1,12 @@
-name: debian-docker-image-build
+name: mariadb-build
 
 on:
   push:
   schedule:
     - cron: '0 */8 * * *'
 
-jobs: 
-  debian-docker-image-build:
+jobs:
+  mariadb-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,10 +14,11 @@ jobs:
         uses: actions/checkout@v2
       - name: docker login
         run: docker login -u ${{ secrets.DOCKERUSERNAME }} -p ${{ secrets.DOCKERAPIKEY }}
-      - name: treehouses debian
+      - name: treehouses mariadb
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
-          repo="rjole/debian"
+          repo="jleekwong/mariadb"
+          base="balenalib/raspberry-pi-debian"
           source sha_function.sh
           debian_x86_sha=$(get_variant_sha "debian" "latest" "amd64")
           echo "debian amd64"
@@ -25,7 +26,7 @@ jobs:
           variant_debian_x86_sha=$(get_manifest_sha "$repo:latest" "amd64")
           echo "treehouses/debian amd64"
           echo $variant_debian_x86_sha
-          balena_rpi_sha=$(get_tag_sha "balenalib/raspberry-pi-debian" "latest")
+          balena_rpi_sha=$(get_tag_sha "$base" "latest")
           echo $balena_rpi_sha
           variant_rpi_sha=$(get_manifest_sha "$repo:latest" "arm")
           echo $variant_rpi_sha
@@ -38,12 +39,12 @@ jobs:
           tag="3.12-$(date +%Y%m%d%H%M)"
           tag2="latest"
           echo $tag
-          docker manifest create $repo:$tag "debian@"$debian_x86_sha "balenalib/raspberry-pi-debian@"$balena_rpi_sha "debian@"$debian_arm64_sha
-          docker manifest create $repo:latest "debian@"$debian_x86_sha "balenalib/raspberry-pi-debian@"$balena_rpi_sha "debian@"$debian_arm64_sha
-          docker manifest annotate $repo:latest "balenalib/raspberry-pi-debian@"$balena_rpi_sha --arch arm
+          docker manifest create $repo:$tag "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
+          docker manifest create $repo:latest "debian@"$debian_x86_sha "$base@"$balena_rpi_sha "debian@"$debian_arm64_sha
+          docker manifest annotate $repo:latest "$base@"$balena_rpi_sha --arch arm
           docker manifest annotate $repo:$tag "debian@"$debian_arm64_sha --arch arm64
           docker manifest annotate $repo:latest "debian@"$debian_arm64_sha --arch arm64
-          docker manifest annotate $repo:$tag "balenalib/raspberry-pi-debian@"$balena_rpi_sha --arch arm
+          docker manifest annotate $repo:$tag "$base@"$balena_rpi_sha --arch arm
           docker manifest inspect $repo:$tag
           docker manifest inspect $repo:$tag2
           if [[ $flag == true ]]; then
@@ -51,5 +52,3 @@ jobs:
           else
             echo "no changes"
           fi
-
-    
